@@ -1,0 +1,11 @@
+# Ignore file temporary
+*.log
+
+# Ignore Folder
+/build/
+/dist/
+/__pycache__/
+
+# Ignore specific file
+secret_config.json
+app.spec
