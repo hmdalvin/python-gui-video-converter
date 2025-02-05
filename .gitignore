@@ -3,7 +3,6 @@
 
 # Ignore Folder
 /build/
-/dist/
 /__pycache__/
 
 # Ignore specific file
