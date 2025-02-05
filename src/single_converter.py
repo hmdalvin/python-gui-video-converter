@@ -83,7 +83,7 @@ class SingleVideoConverter:
             step_duration_slow = video_duration / (loading_steps_slow * 30)
 
             for i in range(loading_steps_fast):
-                progress_value = (i + 1) * 50 / loading_steps_fast
+                progress_value = int((i + 1) * 50 / loading_steps_fast)  # Convert to integer
                 self.queue.put(progress_value)
                 self.root.after(10, self.check_queue)
                 time.sleep(step_duration_fast)
@@ -91,10 +91,13 @@ class SingleVideoConverter:
             audio.write_audiofile(self.save_path)
 
             for i in range(loading_steps_slow):
-                progress_value = 50 + (i + 1) * 50 / loading_steps_slow
+                progress_value = int(50 + (i + 1) * 50 / loading_steps_slow)  # Convert to integer
                 self.queue.put(progress_value)
                 self.root.after(10, self.check_queue)
                 time.sleep(step_duration_slow)
+
+            # Display notification after conversion is complete
+            self.root.after(10, self.show_conversion_complete_notification)
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to convert {os.path.basename(self.video_path)}: {e}")
@@ -114,3 +117,6 @@ class SingleVideoConverter:
             self.root.update_idletasks()
         except queue.Empty:
             pass
+
+    def show_conversion_complete_notification(self):
+        messagebox.showinfo("Conversion Complete", f"Audio conversion for {os.path.basename(self.video_path)} has been completed successfully.")
