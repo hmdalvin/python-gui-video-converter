@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from ttkbootstrap.widgets import Meter
-from moviepy import VideoFileClip
 import os
 import threading
 import queue
+import subprocess
 
 class BatchVideoConverter:
     def __init__(self, root, queue):
@@ -28,9 +28,9 @@ class BatchVideoConverter:
         self.label_format.pack(pady=5)
 
         self.audio_format_var = tk.StringVar()
-        self.audio_format_var.set("MP3 Audio")  # Default format
+        self.audio_format_var.set("AAC Audio")  # Default format
 
-        self.format_options = ["MP3 Audio", "WAV Audio", "OGG Audio", "FLAC Audio"]
+        self.format_options = ["MP3 Audio", "WAV Audio", "OGG Audio", "FLAC Audio", "AAC Audio"]
         self.option_menu = tk.OptionMenu(root, self.audio_format_var, *self.format_options)
         self.option_menu.config(width=20, font=("Arial", 10))
         self.option_menu.pack(pady=5)
@@ -76,7 +76,7 @@ class BatchVideoConverter:
                 video_name = os.path.splitext(video_file)[0]
                 save_path = os.path.join(self.folder_path, f"{video_name}.{self.audio_format.split()[0].lower()}")
 
-                # Convert video to audio
+                # Convert video to audio using ffmpeg
                 self.convert_single_video(video_path, save_path)
 
                 # Update progress bar after processing each file
@@ -95,10 +95,27 @@ class BatchVideoConverter:
 
     def convert_single_video(self, video_path, save_path):
         try:
-            # Start the video conversion with moviepy
-            video = VideoFileClip(video_path)
-            audio = video.audio
-            audio.write_audiofile(save_path)
+            # Modify this part to handle different formats
+            if self.audio_format == "MP3 Audio":
+                command = f'ffmpeg -y -i "{video_path}" -vn -acodec libmp3lame "{save_path}"'
+            elif self.audio_format == "WAV Audio":
+                command = f'ffmpeg -y -i "{video_path}" -vn "{save_path}"'
+            elif self.audio_format == "OGG Audio":
+                command = f'ffmpeg -y -i "{video_path}" -vn -acodec libvorbis "{save_path}"'
+            elif self.audio_format == "FLAC Audio":
+                command = f'ffmpeg -y -i "{video_path}" -vn -acodec flac "{save_path}"'
+            else:  # Default is AAC Audio
+                command = f'ffmpeg -y -i "{video_path}" -vn -acodec aac -b:a 192k "{save_path}"'
+
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # Handle errors from ffmpeg
+            if result.returncode != 0:
+                error_message = result.stderr.decode("utf-8")
+                messagebox.showerror("Error", f"Failed to convert {os.path.basename(video_path)}: {error_message}")
+                return
+
+            print(result.stdout.decode("utf-8"))  # Optional: Log stdout for debugging
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to convert {os.path.basename(video_path)}: {e}")

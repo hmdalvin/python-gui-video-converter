@@ -53,6 +53,8 @@ class VideoToAudioConverterApp:
         self.root.geometry("500x400")  # Return to the original size
 
 if __name__ == "__main__":
+    import multiprocessing
+    multiprocessing.freeze_support()  # Tambahkan ini
     root = tk.Tk()
     app = VideoToAudioConverterApp(root)
     root.mainloop()
